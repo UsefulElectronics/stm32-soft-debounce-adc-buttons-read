@@ -48,6 +48,8 @@ extern "C" {
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 #define Acceptance_Level	3000
+#define Restart_Level		500
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
