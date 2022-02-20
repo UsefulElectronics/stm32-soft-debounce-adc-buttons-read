@@ -34,6 +34,8 @@
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
+TIM_HandleTypeDef htim2;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -43,6 +45,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -82,49 +85,114 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   uint16_t ADC_Buffer[1] = {0};										//Initialize ADC DMA buffer
 
   HAL_ADC_Start_DMA(&hadc1, ADC_Buffer, 1);							//Start ADC sampling over DMA
+
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(ADC_Buffer[0] < 3500)										//it is possible that one of the buttons has been pressed
+	  if(ADC_Buffer[0] < 3900)										//it is possible that one of the buttons has been pressed
 	  {																//Every led will have a debounce function
 
-		  if((ADC_Buffer[0] <= 1500) && (ADC_Buffer[0] > 500))		//First region
+//		  if((ADC_Buffer[0] <= 1500) && (ADC_Buffer[0] > 500))		//First region
+//		  {
+//			  if(Button_DeBounce(ADC_Buffer))						//Button debounce. Don't take action until it is definite that a button has been pressed
+//			  {
+//
+//				  htim2.Instance->PSC 	= 10000;
+//				  htim2.Instance->CCR1 = 1;
+//			  }														//In this example the action is to light up LEDs
+//		  }
+//		  else if((ADC_Buffer[0] <= 2500) && (ADC_Buffer[0] > 1500)) //Second region
+//		  {
+//			  if(Button1_DeBounce(ADC_Buffer))
+//			  {
+//				  htim2.Instance->PSC 	= 20000;
+//				  htim2.Instance->CCR1  = 1;
+//			  }
+//		  }
+//		  else if((ADC_Buffer[0] <= 3500) && (ADC_Buffer[0] > 2500)) //third region
+//		  {
+//			  if(Button2_DeBounce(ADC_Buffer))
+//			  {
+//				  htim2.Instance->PSC 	= 25000;
+//				  htim2.Instance->CCR1  = 1;
+//			  }
+//		  }
+		  if((ADC_Buffer[0] <= 500) && (ADC_Buffer[0] > 1)) //third region
 		  {
-			  if(Button_DeBounce(ADC_Buffer))						//Button debounce. Don't take action until it is definite that a button has been pressed
+			  if(Button_DeBounce(ADC_Buffer))
 			  {
-				  HAL_GPIO_WritePin(GPIOB, LED0_Pin, GPIO_PIN_SET);	//Take action
-				  HAL_GPIO_WritePin(GPIOB, LED1_Pin|LED2_Pin, GPIO_PIN_RESET);
-			  }														//In this example the action is to light up LEDs
+				  htim2.Instance->PSC 	= 5000;
+				  htim2.Instance->CCR1  = 1;
+			  }
 		  }
-		  else if((ADC_Buffer[0] <= 2500) && (ADC_Buffer[0] > 1500)) //Second region
+		  else if((ADC_Buffer[0] <= 1250) && (ADC_Buffer[0] > 750)) //third region
 		  {
 			  if(Button1_DeBounce(ADC_Buffer))
 			  {
-				  HAL_GPIO_WritePin(GPIOB, LED1_Pin, GPIO_PIN_SET);
-				  HAL_GPIO_WritePin(GPIOB, LED0_Pin|LED2_Pin, GPIO_PIN_RESET);
+				  htim2.Instance->PSC 	= 10000;
+				  htim2.Instance->CCR1  = 1;
 			  }
 		  }
-		  else if((ADC_Buffer[0] <= 3500) && (ADC_Buffer[0] > 2500)) //third region
+		  else if((ADC_Buffer[0] <= 1800) && (ADC_Buffer[0] > 1300)) //third region
 		  {
 			  if(Button2_DeBounce(ADC_Buffer))
 			  {
-				  HAL_GPIO_WritePin(GPIOB, LED2_Pin, GPIO_PIN_SET);
-				  HAL_GPIO_WritePin(GPIOB, LED0_Pin|LED1_Pin, GPIO_PIN_RESET);
+				  htim2.Instance->PSC 	= 15000;
+				  htim2.Instance->CCR1  = 1;
+			  }
+		  }
+		  else if((ADC_Buffer[0] <= 2300) && (ADC_Buffer[0] > 1800)) //third region
+		  {
+			  if(Button3_DeBounce(ADC_Buffer))
+			  {
+				  htim2.Instance->PSC 	= 20000;
+				  htim2.Instance->CCR1  = 1;
+			  }
+		  }
+		  else if((ADC_Buffer[0] <= 2900) && (ADC_Buffer[0] > 2400)) //third region
+		  {
+			  if(Button4_DeBounce(ADC_Buffer))
+			  {
+				  htim2.Instance->PSC 	= 22500;
+				  htim2.Instance->CCR1  = 1;
+			  }
+		  }
+		  else if((ADC_Buffer[0] <= 3400) && (ADC_Buffer[0] > 3000)) //third region
+		  {
+			  if(Button5_DeBounce(ADC_Buffer))
+			  {
+				  htim2.Instance->PSC 	= 25000;
+				  htim2.Instance->CCR1  = 1;
+			  }
+		  }
+		  else if((ADC_Buffer[0] <= 3900) && (ADC_Buffer[0] > 3500)) //third region
+		  {
+			  if(Button6_DeBounce(ADC_Buffer))
+			  {
+				  htim2.Instance->PSC 	= 27500;
+				  htim2.Instance->CCR1  = 1;
 			  }
 		  }
 	  }
 	  else
 	  {
+		  htim2.Instance->CCR1  = 0;
 		  Button_DeBounce(ADC_Buffer);									//Discharge software capacitors
 		  Button1_DeBounce(ADC_Buffer);
 		  Button2_DeBounce(ADC_Buffer);
+		  Button3_DeBounce(ADC_Buffer);
+		  Button4_DeBounce(ADC_Buffer);
+		  Button5_DeBounce(ADC_Buffer);
+		  Button6_DeBounce(ADC_Buffer);
 		  HAL_GPIO_WritePin(GPIOB, LED0_Pin|LED1_Pin|LED2_Pin, GPIO_PIN_RESET);
 	  }																	//Turn off all LEDs when no button is pressed
 
@@ -136,7 +204,6 @@ int main(void)
 }
 
 /**
- *
   * @brief System Clock Configuration
   * @retval None
   */
@@ -227,6 +294,55 @@ static void MX_ADC1_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 10000;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 2;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 1;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+  HAL_TIM_MspPostInit(&htim2);
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -274,7 +390,7 @@ uint8_t Button_DeBounce(uint16_t* ADC_Buffer)
 {
 	uint8_t 		ret = DISABLE;
 	static uint16_t	Level = Restart_Level;			//Software capacitor charged level
-	if(ADC_Buffer[0] < 3500)						//The level is set to be static so the last level value is not gone after executing this function
+	if(ADC_Buffer[0] < 3900)						//The level is set to be static so the last level value is not gone after executing this function
 	{
 		++Level;									//Increment Software capacitor charged level
 	}
@@ -298,7 +414,7 @@ uint8_t Button1_DeBounce(uint16_t* ADC_Buffer)
 {
 	uint8_t 		ret = DISABLE;
 	static uint16_t	Level = Restart_Level;
-	if(ADC_Buffer[0] < 3500)
+	if(ADC_Buffer[0] < 3900)
 	{
 		++Level;
 	}
@@ -322,7 +438,99 @@ uint8_t Button2_DeBounce(uint16_t* ADC_Buffer)
 {
 	uint8_t 		ret = DISABLE;
 	static uint16_t	Level = Restart_Level;
-	if(ADC_Buffer[0] < 3500)
+	if(ADC_Buffer[0] < 3900)
+	{
+		++Level;
+	}
+	else
+	{
+		--Level;
+		if(Level <= Restart_Level)
+		{
+			Level = Restart_Level;
+		}
+	}
+	if(Level >= Acceptance_Level)
+	{
+		Level = Acceptance_Level;
+		ret = ENABLE;
+	}
+	return ret;
+}
+uint8_t Button3_DeBounce(uint16_t* ADC_Buffer)
+{
+	uint8_t 		ret = DISABLE;
+	static uint16_t	Level = Restart_Level;
+	if(ADC_Buffer[0] < 3900)
+	{
+		++Level;
+	}
+	else
+	{
+		--Level;
+		if(Level <= Restart_Level)
+		{
+			Level = Restart_Level;
+		}
+	}
+	if(Level >= Acceptance_Level)
+	{
+		Level = Acceptance_Level;
+		ret = ENABLE;
+	}
+	return ret;
+}
+uint8_t Button4_DeBounce(uint16_t* ADC_Buffer)
+{
+	uint8_t 		ret = DISABLE;
+	static uint16_t	Level = Restart_Level;
+	if(ADC_Buffer[0] < 3900)
+	{
+		++Level;
+	}
+	else
+	{
+		--Level;
+		if(Level <= Restart_Level)
+		{
+			Level = Restart_Level;
+		}
+	}
+	if(Level >= Acceptance_Level)
+	{
+		Level = Acceptance_Level;
+		ret = ENABLE;
+	}
+	return ret;
+}
+uint8_t Button5_DeBounce(uint16_t* ADC_Buffer)
+{
+	uint8_t 		ret = DISABLE;
+	static uint16_t	Level = Restart_Level;
+	if(ADC_Buffer[0] < 3900)
+	{
+		++Level;
+	}
+	else
+	{
+		--Level;
+		if(Level <= Restart_Level)
+		{
+			Level = Restart_Level;
+		}
+	}
+	if(Level >= Acceptance_Level)
+	{
+		Level = Acceptance_Level;
+		ret = ENABLE;
+	}
+	return ret;
+}
+uint8_t Button6_DeBounce(uint16_t* ADC_Buffer)
+{
+	uint8_t 		ret = DISABLE;
+	static uint16_t	Level = Restart_Level;
+	if(ADC_Buffer[0] < 3900)
 	{
 		++Level;
 	}

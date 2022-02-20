@@ -52,6 +52,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -59,6 +61,10 @@ void Error_Handler(void);
 uint8_t Button_DeBounce		(uint16_t* ADC_Buffer);
 uint8_t	Button1_DeBounce	(uint16_t* ADC_Buffer);
 uint8_t	Button2_DeBounce	(uint16_t* ADC_Buffer);
+uint8_t	Button3_DeBounce	(uint16_t* ADC_Buffer);
+uint8_t	Button4_DeBounce	(uint16_t* ADC_Buffer);
+uint8_t	Button5_DeBounce	(uint16_t* ADC_Buffer);
+uint8_t Button6_DeBounce	(uint16_t* ADC_Buffer);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
