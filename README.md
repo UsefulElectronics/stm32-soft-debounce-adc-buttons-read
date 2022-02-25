@@ -3,5 +3,6 @@
 A micro-controller can read the status of several buttons using only one pin using ADC with the help of a simple voltage divider circuit. The most effective way of doing digital read is to perform it using DMA, which will let the CPU not get busy while sampling the read voltage level continuously. This piece of code shows uses one of the algorithms used to debouce buttons by the software while trying to read them.
 
 ![Circuit Diagram](https://github.com/UsefulElectronics/stm32-soft-debounce-adc-buttons-read/blob/main/Circuit%20diagram/voltage%20divider%20circuit.jpg)
-
+### New Circuit Diagram
 The project has been developed to include more buttons and a buzzer that can play musical notes by pressing the buttons.
+![Circuit Diagram](https://github.com/UsefulElectronics/stm32-soft-debounce-adc-buttons-read/blob/main/Circuit%20diagram/Electronic%20Piano.jpg)
