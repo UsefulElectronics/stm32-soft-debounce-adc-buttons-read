@@ -101,32 +101,7 @@ int main(void)
 	  if(ADC_Buffer[0] < 3900)										//it is possible that one of the buttons has been pressed
 	  {																//Every led will have a debounce function
 
-//		  if((ADC_Buffer[0] <= 1500) && (ADC_Buffer[0] > 500))		//First region
-//		  {
-//			  if(Button_DeBounce(ADC_Buffer))						//Button debounce. Don't take action until it is definite that a button has been pressed
-//			  {
-//
-//				  htim2.Instance->PSC 	= 10000;
-//				  htim2.Instance->CCR1 = 1;
-//			  }														//In this example the action is to light up LEDs
-//		  }
-//		  else if((ADC_Buffer[0] <= 2500) && (ADC_Buffer[0] > 1500)) //Second region
-//		  {
-//			  if(Button1_DeBounce(ADC_Buffer))
-//			  {
-//				  htim2.Instance->PSC 	= 20000;
-//				  htim2.Instance->CCR1  = 1;
-//			  }
-//		  }
-//		  else if((ADC_Buffer[0] <= 3500) && (ADC_Buffer[0] > 2500)) //third region
-//		  {
-//			  if(Button2_DeBounce(ADC_Buffer))
-//			  {
-//				  htim2.Instance->PSC 	= 25000;
-//				  htim2.Instance->CCR1  = 1;
-//			  }
-//		  }
-		  if((ADC_Buffer[0] <= 500) && (ADC_Buffer[0] > 1)) //third region
+		  if((ADC_Buffer[0] <= 500) && (ADC_Buffer[0] > 1)) //First region
 		  {
 			  if(Button_DeBounce(ADC_Buffer))
 			  {
@@ -134,7 +109,7 @@ int main(void)
 				  htim2.Instance->CCR1  = 1;
 			  }
 		  }
-		  else if((ADC_Buffer[0] <= 1250) && (ADC_Buffer[0] > 750)) //third region
+		  else if((ADC_Buffer[0] <= 1250) && (ADC_Buffer[0] > 750)) //Second region
 		  {
 			  if(Button1_DeBounce(ADC_Buffer))
 			  {
@@ -150,7 +125,7 @@ int main(void)
 				  htim2.Instance->CCR1  = 1;
 			  }
 		  }
-		  else if((ADC_Buffer[0] <= 2300) && (ADC_Buffer[0] > 1800)) //third region
+		  else if((ADC_Buffer[0] <= 2300) && (ADC_Buffer[0] > 1800)) //Forth region
 		  {
 			  if(Button3_DeBounce(ADC_Buffer))
 			  {
@@ -158,7 +133,7 @@ int main(void)
 				  htim2.Instance->CCR1  = 1;
 			  }
 		  }
-		  else if((ADC_Buffer[0] <= 2900) && (ADC_Buffer[0] > 2400)) //third region
+		  else if((ADC_Buffer[0] <= 2900) && (ADC_Buffer[0] > 2400)) //Fifth region
 		  {
 			  if(Button4_DeBounce(ADC_Buffer))
 			  {
@@ -166,7 +141,7 @@ int main(void)
 				  htim2.Instance->CCR1  = 1;
 			  }
 		  }
-		  else if((ADC_Buffer[0] <= 3400) && (ADC_Buffer[0] > 3000)) //third region
+		  else if((ADC_Buffer[0] <= 3400) && (ADC_Buffer[0] > 3000)) //Sixth region
 		  {
 			  if(Button5_DeBounce(ADC_Buffer))
 			  {
@@ -174,7 +149,7 @@ int main(void)
 				  htim2.Instance->CCR1  = 1;
 			  }
 		  }
-		  else if((ADC_Buffer[0] <= 3900) && (ADC_Buffer[0] > 3500)) //third region
+		  else if((ADC_Buffer[0] <= 3900) && (ADC_Buffer[0] > 3500)) //Seventh region
 		  {
 			  if(Button6_DeBounce(ADC_Buffer))
 			  {
@@ -185,7 +160,7 @@ int main(void)
 	  }
 	  else
 	  {
-		  htim2.Instance->CCR1  = 0;
+		  htim2.Instance->CCR1  = 0;									//Set duty cycle to be zero
 		  Button_DeBounce(ADC_Buffer);									//Discharge software capacitors
 		  Button1_DeBounce(ADC_Buffer);
 		  Button2_DeBounce(ADC_Buffer);
@@ -193,8 +168,7 @@ int main(void)
 		  Button4_DeBounce(ADC_Buffer);
 		  Button5_DeBounce(ADC_Buffer);
 		  Button6_DeBounce(ADC_Buffer);
-		  HAL_GPIO_WritePin(GPIOB, LED0_Pin|LED1_Pin|LED2_Pin, GPIO_PIN_RESET);
-	  }																	//Turn off all LEDs when no button is pressed
+	  }
 
     /* USER CODE END WHILE */
 
