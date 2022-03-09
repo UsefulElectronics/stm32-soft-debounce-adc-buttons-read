@@ -52,7 +52,7 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+_flag8_t MenuButton_Flag;
 /* USER CODE END 0 */
 
 /**
@@ -62,7 +62,7 @@ static void MX_TIM2_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	MenuButton_Flag.data = RESET;					//Flag reset
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -173,6 +173,16 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  if(MenuButton_Flag.bits.B0)
+	  {
+		  static uint8_t Toggle = RESET;
+		  if(MenuButton_Debounce())
+		  {
+			  MenuButton_Flag.bits.B0 = RESET;
+			  HAL_GPIO_WritePin(test_pin_GPIO_Port, test_pin_Pin, Toggle);
+			  Toggle ^= 1;
+		  }
+	  }
   }
   /* USER CODE END 3 */
 }
@@ -339,11 +349,32 @@ static void MX_DMA_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(test_pin_GPIO_Port, test_pin_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : test_pin_Pin */
+  GPIO_InitStruct.Pin = test_pin_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(test_pin_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : menu_button_Pin */
+  GPIO_InitStruct.Pin = menu_button_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(menu_button_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
 }
 
@@ -506,6 +537,29 @@ uint8_t Button6_DeBounce(uint16_t* ADC_Buffer)
 		}
 	}
 	if(Level >= Acceptance_Level)
+	{
+		Level = Acceptance_Level;
+		ret = ENABLE;
+	}
+	return ret;
+}
+uint8_t MenuButton_Debounce(void)									//Menu Button debounce function
+{
+	uint8_t 		ret = DISABLE;
+	static uint16_t Level = Restart_Level;
+	if(!HAL_GPIO_ReadPin(menu_button_GPIO_Port, menu_button_Pin))
+	{
+		++Level;
+	}
+	else
+	{
+		--Level;
+		if(Level <= Restart_Level)
+		{
+			Level = Restart_Level;
+		}
+	}
+	if(Level >= 4000)
 	{
 		Level = Acceptance_Level;
 		ret = ENABLE;

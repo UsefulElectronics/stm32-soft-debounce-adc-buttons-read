@@ -37,12 +37,26 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef union																	// module send to Lop
+{	uint8_t data;
+	struct
+	{
+		uint8_t B0				:1;
+		uint8_t B1				:1;
+		uint8_t B2				:1;
+		uint8_t B3				:1;
+		uint8_t B4				:1;
+		uint8_t B5				:1;
+		uint8_t B6				:1;
+		uint8_t B7				:1;
+	}bits;
 
+}_flag8_t;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+extern _flag8_t MenuButton_Flag;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -65,9 +79,15 @@ uint8_t	Button3_DeBounce	(uint16_t* ADC_Buffer);
 uint8_t	Button4_DeBounce	(uint16_t* ADC_Buffer);
 uint8_t	Button5_DeBounce	(uint16_t* ADC_Buffer);
 uint8_t Button6_DeBounce	(uint16_t* ADC_Buffer);
+uint8_t MenuButton_Debounce	(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define test_pin_Pin GPIO_PIN_1
+#define test_pin_GPIO_Port GPIOA
+#define menu_button_Pin GPIO_PIN_4
+#define menu_button_GPIO_Port GPIOA
+#define menu_button_EXTI_IRQn EXTI4_IRQn
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
