@@ -32,7 +32,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -49,14 +49,24 @@ typedef union																	// module send to Lop
 		uint8_t B5				:1;
 		uint8_t B6				:1;
 		uint8_t B7				:1;
-	}bits;
+	}bit;
 
-}_flag8_t;
+}Flag8_t;
+
+typedef enum
+{
+	MenuButtonStatus_oneClick = 0,
+	MenuButtonStatus_doubleClick,
+	MenuButtonStatus_heldPressed
+}MenuButtonStatus_e;
+
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-extern _flag8_t MenuButton_Flag;
+
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -64,6 +74,15 @@ extern _flag8_t MenuButton_Flag;
 #define Acceptance_Level	3000
 #define Restart_Level		500
 
+typedef struct
+{
+	uint32_t 			buttonTimer;
+	bool 				buttonTimerEnable;
+	MenuButtonStatus_e	buttonStatus;
+	Flag8_t 			buttonFlag;
+}MenuButton_t;
+
+extern MenuButton_t hMenuButton;
 /* USER CODE END EM */
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
@@ -80,6 +99,9 @@ uint8_t	Button4_DeBounce	(uint16_t* ADC_Buffer);
 uint8_t	Button5_DeBounce	(uint16_t* ADC_Buffer);
 uint8_t Button6_DeBounce	(uint16_t* ADC_Buffer);
 uint8_t MenuButton_Debounce	(void);
+
+uint8_t checkTimer			(uint32_t* timer, uint32_t msTime);
+void 	setTimer			(uint32_t* timer);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

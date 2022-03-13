@@ -21,29 +21,29 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, DATA
   8 .data         0000001c  20000000  08003080  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          000000e4  2000001c  0800309c  0002001c  2**2
+  9 .bss          000000e8  2000001c  0800309c  0002001c  2**2
                   ALLOC
- 10 ._user_heap_stack 00000600  20000100  0800309c  00020100  2**0
+ 10 ._user_heap_stack 00000604  20000104  0800309c  00020104  2**0
                   ALLOC
  11 .ARM.attributes 00000029  00000000  00000000  0002001c  2**0
                   CONTENTS, READONLY
- 12 .debug_info   00009c4b  00000000  00000000  00020045  2**0
+ 12 .debug_info   00009e21  00000000  00000000  00020045  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_abbrev 0000199f  00000000  00000000  00029c90  2**0
+ 13 .debug_abbrev 000019e0  00000000  00000000  00029e66  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_aranges 00000b38  00000000  00000000  0002b630  2**3
+ 14 .debug_aranges 00000b48  00000000  00000000  0002b848  2**3
                   CONTENTS, READONLY, DEBUGGING
- 15 .debug_ranges 00000a60  00000000  00000000  0002c168  2**3
+ 15 .debug_ranges 00000a70  00000000  00000000  0002c390  2**3
                   CONTENTS, READONLY, DEBUGGING
- 16 .debug_macro  0001718d  00000000  00000000  0002cbc8  2**0
+ 16 .debug_macro  000171ca  00000000  00000000  0002ce00  2**0
                   CONTENTS, READONLY, DEBUGGING
- 17 .debug_line   00009057  00000000  00000000  00043d55  2**0
+ 17 .debug_line   000090a4  00000000  00000000  00043fca  2**0
                   CONTENTS, READONLY, DEBUGGING
- 18 .debug_str    0008915b  00000000  00000000  0004cdac  2**0
+ 18 .debug_str    00089262  00000000  00000000  0004d06e  2**0
                   CONTENTS, READONLY, DEBUGGING
- 19 .comment      0000007b  00000000  00000000  000d5f07  2**0
+ 19 .comment      0000007b  00000000  00000000  000d62d0  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00002e68  00000000  00000000  000d5f84  2**2
+ 20 .debug_frame  00002eb0  00000000  00000000  000d634c  2**2
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -87,10 +87,10 @@ int main(void)
  800014e:	b082      	sub	sp, #8
  8000150:	af00      	add	r7, sp, #0
   /* USER CODE BEGIN 1 */
-	MenuButton_Flag.data = RESET;					//Flag reset
+	hMenuButton.buttonFlag.data = RESET;			//Flag reset
  8000152:	4b8e      	ldr	r3, [pc, #568]	; (800038c <main+0x240>)
  8000154:	2200      	movs	r2, #0
- 8000156:	701a      	strb	r2, [r3, #0]
+ 8000156:	719a      	strb	r2, [r3, #6]
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -405,9 +405,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  if(MenuButton_Flag.bits.B0)
+	  if(hMenuButton.buttonFlag.bit.B0)
  8000348:	4b10      	ldr	r3, [pc, #64]	; (800038c <main+0x240>)
- 800034a:	781b      	ldrb	r3, [r3, #0]
+ 800034a:	799b      	ldrb	r3, [r3, #6]
  800034c:	f003 0301 	and.w	r3, r3, #1
  8000350:	b2db      	uxtb	r3, r3
  8000352:	2b00      	cmp	r3, #0
@@ -420,11 +420,11 @@ int main(void)
  800035e:	2b00      	cmp	r3, #0
  8000360:	f43f af12 	beq.w	8000188 <main+0x3c>
 		  {
-			  MenuButton_Flag.bits.B0 = RESET;
+			  hMenuButton.buttonFlag.bit.B0 = RESET;
  8000364:	4a09      	ldr	r2, [pc, #36]	; (800038c <main+0x240>)
- 8000366:	7813      	ldrb	r3, [r2, #0]
+ 8000366:	7993      	ldrb	r3, [r2, #6]
  8000368:	f36f 0300 	bfc	r3, #0, #1
- 800036c:	7013      	strb	r3, [r2, #0]
+ 800036c:	7193      	strb	r3, [r2, #6]
 			  HAL_GPIO_WritePin(test_pin_GPIO_Port, test_pin_Pin, Toggle);
  800036e:	4b0a      	ldr	r3, [pc, #40]	; (8000398 <main+0x24c>)
  8000370:	781b      	ldrb	r3, [r3, #0]
@@ -442,8 +442,8 @@ int main(void)
 	  if(ADC_Buffer[0] < 3900)										//it is possible that one of the buttons has been pressed
  800038a:	e6fd      	b.n	8000188 <main+0x3c>
  800038c:	2000003c 	.word	0x2000003c
- 8000390:	20000040 	.word	0x20000040
- 8000394:	200000b4 	.word	0x200000b4
+ 8000390:	20000044 	.word	0x20000044
+ 8000394:	200000b8 	.word	0x200000b8
  8000398:	20000038 	.word	0x20000038
  800039c:	40010800 	.word	0x40010800
 
@@ -665,7 +665,7 @@ static void MX_ADC1_Init(void)
  80004c6:	3710      	adds	r7, #16
  80004c8:	46bd      	mov	sp, r7
  80004ca:	bd80      	pop	{r7, pc}
- 80004cc:	20000040 	.word	0x20000040
+ 80004cc:	20000044 	.word	0x20000044
  80004d0:	40012400 	.word	0x40012400
 
 080004d4 <MX_TIM2_Init>:
@@ -791,7 +791,7 @@ static void MX_TIM2_Init(void)
  800057a:	3728      	adds	r7, #40	; 0x28
  800057c:	46bd      	mov	sp, r7
  800057e:	bd80      	pop	{r7, pc}
- 8000580:	200000b4 	.word	0x200000b4
+ 8000580:	200000b8 	.word	0x200000b8
 
 08000584 <MX_DMA_Init>:
 
@@ -1468,7 +1468,7 @@ uint8_t Button6_DeBounce(uint16_t* ADC_Buffer)
  8000970:	2000000c 	.word	0x2000000c
 
 08000974 <MenuButton_Debounce>:
-uint8_t MenuButton_Debounce(void)
+uint8_t MenuButton_Debounce(void)									//Menu Button debounce function
 {
  8000974:	b580      	push	{r7, lr}
  8000976:	b082      	sub	sp, #8
@@ -1757,7 +1757,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
  8000b0c:	40012400 	.word	0x40012400
  8000b10:	40021000 	.word	0x40021000
  8000b14:	40010c00 	.word	0x40010c00
- 8000b18:	20000070 	.word	0x20000070
+ 8000b18:	20000074 	.word	0x20000074
  8000b1c:	40020008 	.word	0x40020008
 
 08000b20 <HAL_TIM_PWM_MspInit>:
@@ -2061,11 +2061,12 @@ void EXTI4_IRQHandler(void)
  8000c38:	b580      	push	{r7, lr}
  8000c3a:	af00      	add	r7, sp, #0
   /* USER CODE BEGIN EXTI4_IRQn 0 */
-	MenuButton_Flag.bits.B0 = SET;		//Flag bit0 is set for interrupt detection flag
+//	MenuButton_Flag.bits.B0 = SET;
+	hMenuButton.buttonFlag.bit.B0 = SET; //Flag bit0 is set for interrupt detection flag
  8000c3c:	4a04      	ldr	r2, [pc, #16]	; (8000c50 <EXTI4_IRQHandler+0x18>)
- 8000c3e:	7813      	ldrb	r3, [r2, #0]
+ 8000c3e:	7993      	ldrb	r3, [r2, #6]
  8000c40:	f043 0301 	orr.w	r3, r3, #1
- 8000c44:	7013      	strb	r3, [r2, #0]
+ 8000c44:	7193      	strb	r3, [r2, #6]
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
  8000c46:	2010      	movs	r0, #16
@@ -2100,7 +2101,7 @@ void DMA1_Channel1_IRQHandler(void)
  8000c5e:	bf00      	nop
  8000c60:	bd80      	pop	{r7, pc}
  8000c62:	bf00      	nop
- 8000c64:	20000070 	.word	0x20000070
+ 8000c64:	20000074 	.word	0x20000074
 
 08000c68 <SystemInit>:
   * @note   This function should be used only after reset.
@@ -2205,7 +2206,7 @@ LoopFillZerobss:
   ldr r2, =_sbss
  8000cb4:	2000001c 	.word	0x2000001c
   ldr r4, =_ebss
- 8000cb8:	20000100 	.word	0x20000100
+ 8000cb8:	20000104 	.word	0x20000104
 
 08000cbc <ADC1_2_IRQHandler>:
  * @retval : None
@@ -2353,7 +2354,7 @@ __weak void HAL_IncTick(void)
  8000d64:	bc80      	pop	{r7}
  8000d66:	4770      	bx	lr
  8000d68:	20000018 	.word	0x20000018
- 8000d6c:	200000fc 	.word	0x200000fc
+ 8000d6c:	20000100 	.word	0x20000100
 
 08000d70 <HAL_GetTick>:
   * @note  This function is declared as __weak to be overwritten in case of other
@@ -2372,7 +2373,7 @@ __weak uint32_t HAL_GetTick(void)
  8000d7a:	46bd      	mov	sp, r7
  8000d7c:	bc80      	pop	{r7}
  8000d7e:	4770      	bx	lr
- 8000d80:	200000fc 	.word	0x200000fc
+ 8000d80:	20000100 	.word	0x20000100
 
 08000d84 <HAL_ADC_Init>:
   *         of structure "ADC_InitTypeDef".

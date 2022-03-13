@@ -52,7 +52,7 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-_flag8_t MenuButton_Flag;
+MenuButton_t hMenuButton;
 /* USER CODE END 0 */
 
 /**
@@ -62,7 +62,8 @@ _flag8_t MenuButton_Flag;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	MenuButton_Flag.data = RESET;					//Flag reset
+	hMenuButton.buttonFlag.data = RESET;			//Flag reset
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -173,12 +174,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  if(MenuButton_Flag.bits.B0)
+	  if(hMenuButton.buttonFlag.bit.B0)
 	  {
 		  static uint8_t Toggle = RESET;
 		  if(MenuButton_Debounce())
 		  {
-			  MenuButton_Flag.bits.B0 = RESET;
+			  hMenuButton.buttonFlag.bit.B0 = RESET;
 			  HAL_GPIO_WritePin(test_pin_GPIO_Port, test_pin_Pin, Toggle);
 			  Toggle ^= 1;
 		  }
@@ -564,6 +565,17 @@ uint8_t MenuButton_Debounce(void)									//Menu Button debounce function
 		Level = Acceptance_Level;
 		ret = ENABLE;
 	}
+	return ret;
+}
+
+void setTimer(uint32_t* timer)
+{
+	*timer = HAL_GetTick();
+}
+uint8_t checkTimer(uint32_t* timer, uint32_t msTime)
+{
+	uint8_t ret = RESET;
+	ret = ((HAL_GetTick() - *timer) > msTime)  ? ENABLE : DISABLE;
 	return ret;
 }
 /* USER CODE END 4 */
