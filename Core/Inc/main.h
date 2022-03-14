@@ -80,6 +80,7 @@ typedef struct
 	bool 				buttonTimerEnable;
 	MenuButtonStatus_e	buttonStatus;
 	Flag8_t 			buttonFlag;
+	uint8_t 			buttonHeldPressedCounter;
 }MenuButton_t;
 
 extern MenuButton_t hMenuButton;

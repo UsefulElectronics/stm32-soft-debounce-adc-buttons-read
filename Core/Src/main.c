@@ -182,7 +182,39 @@ int main(void)
 			  hMenuButton.buttonFlag.bit.B0 = RESET;
 			  HAL_GPIO_WritePin(test_pin_GPIO_Port, test_pin_Pin, Toggle);
 			  Toggle ^= 1;
+
+			  if(hMenuButton.buttonTimerEnable != SET)
+			  {
+				  hMenuButton.buttonTimerEnable = SET;
+				  hMenuButton.buttonStatus = MenuButtonStatus_oneClick;
+				  setTimer(&hMenuButton.buttonTimer);
+			  }
+			  else
+			  {
+				  hMenuButton.buttonStatus = MenuButtonStatus_doubleClick;
+			  }
+
+
 		  }
+	  }
+	  if((checkTimer(&hMenuButton.buttonTimer, 10)) && hMenuButton.buttonTimerEnable)
+	  {
+		  ++hMenuButton.buttonHeldPressedCounter;
+		  hMenuButton.buttonStatus = (hMenuButton.buttonHeldPressedCounter >= 30)  ? MenuButtonStatus_heldPressed : hMenuButton.buttonStatus;
+	  }
+	  if((checkTimer(&hMenuButton.buttonTimer, 300)) && hMenuButton.buttonTimerEnable)
+	  {
+		  switch(hMenuButton.buttonStatus)
+		  {
+		  	  case	MenuButtonStatus_oneClick:
+		  		  break;
+		  	  case 	MenuButtonStatus_doubleClick:
+		  		  break;
+		  	  case MenuButtonStatus_heldPressed:
+		  		  break;
+
+		  }
+		  hMenuButton.buttonTimerEnable = RESET;
 	  }
   }
   /* USER CODE END 3 */
