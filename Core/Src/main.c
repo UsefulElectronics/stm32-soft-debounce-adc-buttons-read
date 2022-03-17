@@ -197,9 +197,12 @@ int main(void)
 
 		  }
 	  }
-	  if((checkTimer(&hMenuButton.buttonTimer, 10)) && hMenuButton.buttonTimerEnable)
+	  if((checkTimer(&hMenuButton.buttonTimer, 10 * hMenuButton.buttonHeldPressedCounter)) && hMenuButton.buttonTimerEnable)
 	  {
-		  ++hMenuButton.buttonHeldPressedCounter;
+		  if(!HAL_GPIO_ReadPin(menu_button_GPIO_Port, menu_button_Pin))
+		  {
+			  ++hMenuButton.buttonHeldPressedCounter;
+		  }
 		  hMenuButton.buttonStatus = (hMenuButton.buttonHeldPressedCounter >= 30)  ? MenuButtonStatus_heldPressed : hMenuButton.buttonStatus;
 	  }
 	  if((checkTimer(&hMenuButton.buttonTimer, 300)) && hMenuButton.buttonTimerEnable)
@@ -214,7 +217,8 @@ int main(void)
 		  		  break;
 
 		  }
-		  hMenuButton.buttonTimerEnable = RESET;
+		  hMenuButton.buttonTimerEnable 		= RESET;
+		  hMenuButton.buttonHeldPressedCounter 	= RESET;
 	  }
   }
   /* USER CODE END 3 */
