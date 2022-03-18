@@ -161,8 +161,8 @@ int main(void)
 	  }
 	  else
 	  {
-		  htim2.Instance->CCR1  = 0;									//Set duty cycle to be zero
-		  Button_DeBounce(ADC_Buffer);									//Discharge software capacitors
+		  htim2.Instance->CCR1  = 0;										//Set duty cycle to be zero
+		  Button_DeBounce(ADC_Buffer);										//Discharge software capacitors
 		  Button1_DeBounce(ADC_Buffer);
 		  Button2_DeBounce(ADC_Buffer);
 		  Button3_DeBounce(ADC_Buffer);
@@ -177,36 +177,32 @@ int main(void)
 	  if(hMenuButton.buttonFlag.bit.B0)
 	  {
 		  static uint8_t Toggle = RESET;
-		  if(MenuButton_Debounce())
+		  if(MenuButton_Debounce())											//Apply de-bounce algorithm before taking any action
 		  {
-			  hMenuButton.buttonFlag.bit.B0 = RESET;
-			  HAL_GPIO_WritePin(test_pin_GPIO_Port, test_pin_Pin, Toggle);
-			  Toggle ^= 1;
+			  hMenuButton.buttonFlag.bit.B0 = RESET;						//Reset interrupt flag
 
-			  if(hMenuButton.buttonTimerEnable != SET)
+			  if(hMenuButton.buttonTimerEnable != SET)						//Start timer when the menu button gets pressed for the first time
 			  {
-				  hMenuButton.buttonTimerEnable = SET;
-				  hMenuButton.buttonStatus = MenuButtonStatus_oneClick;
-				  setTimer(&hMenuButton.buttonTimer);
+				  hMenuButton.buttonTimerEnable = SET;						//Enable software timer
+				  hMenuButton.buttonStatus = MenuButtonStatus_oneClick;		//The menu button has been pressed for one time
+				  setTimer(&hMenuButton.buttonTimer);						//Start software timer
 			  }
 			  else
 			  {
-				  hMenuButton.buttonStatus = MenuButtonStatus_doubleClick;
+				  hMenuButton.buttonStatus = MenuButtonStatus_doubleClick;	//If the timer is already started this means that the button is pressed for the second time
 			  }
-
-
 		  }
 	  }
 	  if((checkTimer(&hMenuButton.buttonTimer, 10 * hMenuButton.buttonHeldPressedCounter)) && hMenuButton.buttonTimerEnable)
-	  {
-		  if(!HAL_GPIO_ReadPin(menu_button_GPIO_Port, menu_button_Pin))
+	  {																		//If the menu button has been pressed, take logic sample every 10 ms from the button read pin
+		  if(!HAL_GPIO_ReadPin(menu_button_GPIO_Port, menu_button_Pin))		//To check if the button is still pressed
 		  {
-			  ++hMenuButton.buttonHeldPressedCounter;
+			  ++hMenuButton.buttonHeldPressedCounter;						//Increment samples number
 		  }
 		  hMenuButton.buttonStatus = (hMenuButton.buttonHeldPressedCounter >= 30)  ? MenuButtonStatus_heldPressed : hMenuButton.buttonStatus;
-	  }
+	  }																		//If the button is held pressed change button status
 	  if((checkTimer(&hMenuButton.buttonTimer, 300)) && hMenuButton.buttonTimerEnable)
-	  {
+	  {																		//Take decision after 300 ms whether one click, double click or held pressed event has occured
 		  switch(hMenuButton.buttonStatus)
 		  {
 		  	  case	MenuButtonStatus_oneClick:
@@ -217,8 +213,8 @@ int main(void)
 		  		  break;
 
 		  }
-		  hMenuButton.buttonTimerEnable 		= RESET;
-		  hMenuButton.buttonHeldPressedCounter 	= RESET;
+		  hMenuButton.buttonTimerEnable 		= RESET;					//Disable software timer
+		  hMenuButton.buttonHeldPressedCounter 	= RESET;					//Reset counter
 	  }
   }
   /* USER CODE END 3 */
