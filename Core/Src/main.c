@@ -176,7 +176,6 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  if(hMenuButton.buttonFlag.bit.B0)
 	  {
-		  static uint8_t Toggle = RESET;
 		  if(MenuButton_Debounce())											//Apply de-bounce algorithm before taking any action
 		  {
 			  hMenuButton.buttonFlag.bit.B0 = RESET;						//Reset interrupt flag
@@ -193,15 +192,15 @@ int main(void)
 			  }
 		  }
 	  }
-	  if((checkTimer(&hMenuButton.buttonTimer, 10 * hMenuButton.buttonHeldPressedCounter)) && hMenuButton.buttonTimerEnable)
+	  if((checkTimer(&hMenuButton.buttonTimer, 5 * hMenuButton.buttonHeldPressedCounter)) && ( hMenuButton.buttonStatus == MenuButtonStatus_oneClick))
 	  {																		//If the menu button has been pressed, take logic sample every 10 ms from the button read pin
 		  if(!HAL_GPIO_ReadPin(menu_button_GPIO_Port, menu_button_Pin))		//To check if the button is still pressed
 		  {
 			  ++hMenuButton.buttonHeldPressedCounter;						//Increment samples number
 		  }
-		  hMenuButton.buttonStatus = (hMenuButton.buttonHeldPressedCounter >= 30)  ? MenuButtonStatus_heldPressed : hMenuButton.buttonStatus;
+		  hMenuButton.buttonStatus = (hMenuButton.buttonHeldPressedCounter >= 71)  ? MenuButtonStatus_heldPressed : hMenuButton.buttonStatus;
 	  }																		//If the button is held pressed change button status
-	  if((checkTimer(&hMenuButton.buttonTimer, 300)) && hMenuButton.buttonTimerEnable)
+	  if((checkTimer(&hMenuButton.buttonTimer, 350)) && hMenuButton.buttonTimerEnable)
 	  {																		//Take decision after 300 ms whether one click, double click or held pressed event has occured
 		  switch(hMenuButton.buttonStatus)
 		  {
