@@ -63,7 +63,8 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 	hMenuButton.buttonFlag.data = RESET;			//Flag reset
-
+	uint16_t 	soundLevel 		= 10;
+	SoundTest_t	hSoundLevelTest;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -106,62 +107,93 @@ int main(void)
 		  {
 			  if(Button_DeBounce(ADC_Buffer))
 			  {
-				  htim2.Instance->PSC 	= 5000;
-				  htim2.Instance->CCR1  = 1;
+				  htim2.Instance->PSC 	= 125;
+				  htim2.Instance->CCR1  = soundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 1250) && (ADC_Buffer[0] > 750)) //Second region
 		  {
 			  if(Button1_DeBounce(ADC_Buffer))
 			  {
-				  htim2.Instance->PSC 	= 10000;
-				  htim2.Instance->CCR1  = 1;
+				  htim2.Instance->PSC 	= 150;
+				  htim2.Instance->CCR1  = soundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 1800) && (ADC_Buffer[0] > 1300)) //third region
 		  {
 			  if(Button2_DeBounce(ADC_Buffer))
 			  {
-				  htim2.Instance->PSC 	= 15000;
-				  htim2.Instance->CCR1  = 1;
+				  htim2.Instance->PSC 	= 175;
+				  htim2.Instance->CCR1  = soundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 2300) && (ADC_Buffer[0] > 1800)) //Forth region
 		  {
 			  if(Button3_DeBounce(ADC_Buffer))
 			  {
-				  htim2.Instance->PSC 	= 20000;
-				  htim2.Instance->CCR1  = 1;
+				  htim2.Instance->PSC 	= 200;
+				  htim2.Instance->CCR1  = soundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 2900) && (ADC_Buffer[0] > 2400)) //Fifth region
 		  {
 			  if(Button4_DeBounce(ADC_Buffer))
 			  {
-				  htim2.Instance->PSC 	= 22500;
-				  htim2.Instance->CCR1  = 1;
+				  htim2.Instance->PSC 	= 225;
+				  htim2.Instance->CCR1  = soundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 3400) && (ADC_Buffer[0] > 3000)) //Sixth region
 		  {
 			  if(Button5_DeBounce(ADC_Buffer))
 			  {
-				  htim2.Instance->PSC 	= 25000;
-				  htim2.Instance->CCR1  = 1;
+				  htim2.Instance->PSC 	= 250;
+				  htim2.Instance->CCR1  = soundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 3900) && (ADC_Buffer[0] > 3500)) //Seventh region
 		  {
 			  if(Button6_DeBounce(ADC_Buffer))
 			  {
-				  htim2.Instance->PSC 	= 27500;
-				  htim2.Instance->CCR1  = 1;
+				  htim2.Instance->PSC 	= 275;
+				  htim2.Instance->CCR1  = soundLevel;
 			  }
 		  }
 	  }
 	  else
 	  {
-		  htim2.Instance->CCR1  = 0;										//Set duty cycle to be zero
+		  if(!hSoundLevelTest.testTimerEnable)								//In case of sound test don't turn off the buzzer
+		  {
+			  htim2.Instance->CCR1  = RESET;								//Set duty cycle to be zero
+		  }
+		  else
+		  {
+			  htim2.Instance->PSC 	= 100 + hSoundLevelTest.testCounter;
+			  htim2.Instance->CCR1  = soundLevel;
+			  if(checkTimer(&hSoundLevelTest.testTimer, 200))
+			  {
+				  setTimer(&hSoundLevelTest.testTimer);
+				  if(hSoundLevelTest.testDirection)
+				  {
+					  hSoundLevelTest.testCounter += 25;
+					  if(hSoundLevelTest.testCounter >= 200)
+					  {
+						  hSoundLevelTest.testDirection ^= 1;
+					  }
+				  }
+				  else
+				  {
+					  hSoundLevelTest.testCounter -= 25;
+					  if(hSoundLevelTest.testCounter == 0)
+					  {
+						  hSoundLevelTest.testDirection ^= 1;
+					  }
+				  }
+
+			  }
+
+		  }
+
 		  Button_DeBounce(ADC_Buffer);										//Discharge software capacitors
 		  Button1_DeBounce(ADC_Buffer);
 		  Button2_DeBounce(ADC_Buffer);
@@ -198,22 +230,36 @@ int main(void)
 		  {
 			  ++hMenuButton.buttonHeldPressedCounter;						//Increment samples number
 		  }
-		  hMenuButton.buttonStatus = (hMenuButton.buttonHeldPressedCounter >= 71)  ? MenuButtonStatus_heldPressed : hMenuButton.buttonStatus;
+		  hMenuButton.buttonStatus = (hMenuButton.buttonHeldPressedCounter >= 65)  ? MenuButtonStatus_heldPressed : hMenuButton.buttonStatus;
 	  }																		//If the button is held pressed change button status
 	  if((checkTimer(&hMenuButton.buttonTimer, 350)) && hMenuButton.buttonTimerEnable)
 	  {																		//Take decision after 300 ms whether one click, double click or held pressed event has occured
 		  switch(hMenuButton.buttonStatus)
 		  {
 		  	  case	MenuButtonStatus_oneClick:
+		  		  if(soundLevelUpperBoundryCheck(soundLevel))
+		  		  {
+		  			 soundLevel += AUDIO_LEVEL_STEP;
+		  		  }
 		  		  break;
 		  	  case 	MenuButtonStatus_doubleClick:
-		  		  break;
+		  		  if(soundLevelLowerBoundryCheck(soundLevel))
+		  		  {
+		  			 soundLevel -= AUDIO_LEVEL_STEP;
+		  		  }
+		  		 break;
 		  	  case MenuButtonStatus_heldPressed:
-		  		  break;
+		  		  hSoundLevelTest.testTimerEnable ^= 1;
+		  		  setTimer(&hSoundLevelTest.testTimer);
+		  		  hSoundLevelTest.testDirection = ENABLE;
+		  		 break;
+		  	case MenuButtonStatus_notPressed:
+		  		 break;
 
 		  }
 		  hMenuButton.buttonTimerEnable 		= RESET;					//Disable software timer
 		  hMenuButton.buttonHeldPressedCounter 	= RESET;					//Reset counter
+		  hMenuButton.buttonStatus 				= MenuButtonStatus_notPressed;
 	  }
   }
   /* USER CODE END 3 */
@@ -328,9 +374,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 10000;
+  htim2.Init.Prescaler = 200;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 2;
+  htim2.Init.Period = 100;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
@@ -607,6 +653,24 @@ uint8_t checkTimer(uint32_t* timer, uint32_t msTime)
 {
 	uint8_t ret = RESET;
 	ret = ((HAL_GetTick() - *timer) > msTime)  ? ENABLE : DISABLE;
+	return ret;
+}
+FunctionalState soundLevelLowerBoundryCheck(uint16_t currentSoundLevel)
+{
+	uint8_t ret = ENABLE;
+	if( (currentSoundLevel == 0))
+	{
+		ret = DISABLE;
+	}
+	return ret;
+}
+FunctionalState soundLevelUpperBoundryCheck(uint16_t currentSoundLevel)
+{
+	uint8_t ret = ENABLE;
+	if(currentSoundLevel >= 90)
+	{
+		ret = DISABLE;
+	}
 	return ret;
 }
 /* USER CODE END 4 */

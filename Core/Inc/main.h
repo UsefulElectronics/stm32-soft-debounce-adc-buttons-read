@@ -57,7 +57,8 @@ typedef enum
 {
 	MenuButtonStatus_oneClick = 0,
 	MenuButtonStatus_doubleClick,
-	MenuButtonStatus_heldPressed
+	MenuButtonStatus_heldPressed,
+	MenuButtonStatus_notPressed
 }MenuButtonStatus_e;
 
 
@@ -74,6 +75,8 @@ typedef enum
 #define Acceptance_Level	3000
 #define Restart_Level		500
 
+
+#define AUDIO_LEVEL_STEP	10
 typedef struct
 {
 	uint32_t 			buttonTimer;
@@ -82,6 +85,14 @@ typedef struct
 	Flag8_t 			buttonFlag;
 	uint8_t 			buttonHeldPressedCounter;
 }MenuButton_t;
+
+typedef struct
+{
+	uint32_t 			testTimer;
+	bool 				testTimerEnable;
+	uint8_t				testCounter;
+	bool 				testDirection;
+}SoundTest_t;
 
 extern MenuButton_t hMenuButton;
 /* USER CODE END EM */
@@ -103,6 +114,9 @@ uint8_t MenuButton_Debounce	(void);
 
 uint8_t checkTimer			(uint32_t* timer, uint32_t msTime);
 void 	setTimer			(uint32_t* timer);
+
+FunctionalState soundLevelLowerBoundryCheck(uint16_t currentSoundLevel);
+FunctionalState soundLevelUpperBoundryCheck(uint16_t currentSoundLevel);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
