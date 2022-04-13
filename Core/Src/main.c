@@ -34,6 +34,8 @@
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
+I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
@@ -46,6 +48,7 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -64,7 +67,12 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	hMenuButton.buttonFlag.data = RESET;			//Flag reset
 	uint16_t 	soundLevel 		= 10;
-	SoundTest_t	hSoundLevelTest;
+
+	SoundTest_t			hSoundLevelTest;
+
+	Pcf7584Control_t	hIndicator;
+
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -88,12 +96,24 @@ int main(void)
   MX_DMA_Init();
   MX_ADC1_Init();
   MX_TIM2_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  uint16_t ADC_Buffer[1] = {0};										//Initialize ADC DMA buffer
+  uint16_t 	ADC_Buffer[1] 		= {0};										//Initialize ADC DMA buffer
+
+  hIndicator.indicatorAddress 	= PCF8574_ADDRESS;
+  hIndicator.indicatorEnable	= ENABLE;
+  hIndicator.indicatorCounter	= ENABLE;
+  hIndicator.indicatorLedSet 	= SET;
+
+  hMenuButton.buttonStatus 		= MenuButtonStatus_notPressed;
+
 
   HAL_ADC_Start_DMA(&hadc1, ADC_Buffer, 1);							//Start ADC sampling over DMA
 
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+
+  HAL_I2C_Init(&hi2c1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -168,22 +188,22 @@ int main(void)
 		  }
 		  else
 		  {
-			  htim2.Instance->PSC 	= 100 + hSoundLevelTest.testCounter;
-			  htim2.Instance->CCR1  = soundLevel;
+			  htim2.Instance->PSC 	= 100 + hSoundLevelTest.testCounter;	//Sound test related part the pre-scaler is modified continuously
+			  htim2.Instance->CCR1  = soundLevel;							//to output different tones
 			  if(checkTimer(&hSoundLevelTest.testTimer, 200))
 			  {
 				  setTimer(&hSoundLevelTest.testTimer);
 				  if(hSoundLevelTest.testDirection)
 				  {
-					  hSoundLevelTest.testCounter += 25;
+					  hSoundLevelTest.testCounter += 25;					//Lower frequency of PWM signal used while the sound test mode is ON
 					  if(hSoundLevelTest.testCounter >= 200)
 					  {
-						  hSoundLevelTest.testDirection ^= 1;
+						  hSoundLevelTest.testDirection ^= 1;				//Used to toggle between increasing and decreasing frequency tone
 					  }
 				  }
 				  else
 				  {
-					  hSoundLevelTest.testCounter -= 25;
+					  hSoundLevelTest.testCounter -= 25;					//Increase frequency signal used while the sound test mode is ON
 					  if(hSoundLevelTest.testCounter == 0)
 					  {
 						  hSoundLevelTest.testDirection ^= 1;
@@ -239,13 +259,25 @@ int main(void)
 		  	  case	MenuButtonStatus_oneClick:
 		  		  if(soundLevelUpperBoundryCheck(soundLevel))
 		  		  {
-		  			 soundLevel += AUDIO_LEVEL_STEP;
+		  			  soundLevel += AUDIO_LEVEL_STEP; 						//Increment sound level on step
+		  		  }
+		  		  if(indicatorBufferUpperCheck(hIndicator.indicatorCounter))
+		  		  {
+		  			  hIndicator.indicatorEnable = ENABLE;					//Enable LED indicator handler
+		  			++hIndicator.indicatorCounter;							//Increment number of LEDs to be turned on
+		  			  hIndicator.indicatorLedSet = SET;						//Turn on one more LED
 		  		  }
 		  		  break;
 		  	  case 	MenuButtonStatus_doubleClick:
 		  		  if(soundLevelLowerBoundryCheck(soundLevel))
 		  		  {
-		  			 soundLevel -= AUDIO_LEVEL_STEP;
+		  			  soundLevel -= AUDIO_LEVEL_STEP;						//Detriment sound level
+		  		  }
+		  		  if(indicatorBufferLowerCheck(hIndicator.indicatorCounter))
+		  		  {
+		  			  hIndicator.indicatorEnable = ENABLE;
+		  			--hIndicator.indicatorCounter;							//Increment number of LEDs to be turned on
+		  			  hIndicator.indicatorLedSet = RESET;					//Turn off one more LED
 		  		  }
 		  		 break;
 		  	  case MenuButtonStatus_heldPressed:
@@ -260,7 +292,14 @@ int main(void)
 		  hMenuButton.buttonTimerEnable 		= RESET;					//Disable software timer
 		  hMenuButton.buttonHeldPressedCounter 	= RESET;					//Reset counter
 		  hMenuButton.buttonStatus 				= MenuButtonStatus_notPressed;
+		  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	//button status is set to no press to avoid misbehavior of the button functionality
+
 	  }
+	  indicatorHandler(&hIndicator);
+//	  indicatorBuffer = 0x55;
+//
+//	  HAL_I2C_Master_Transmit(&hi2c1, indicatorAddress, &indicatorBuffer, 1, 100);
+
   }
   /* USER CODE END 3 */
 }
@@ -352,6 +391,40 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -479,7 +552,7 @@ uint8_t Button_DeBounce(uint16_t* ADC_Buffer)
 		Level = Acceptance_Level;
 		ret = ENABLE;								//Enable taking action wherever this function is called
 	}
-	return ret;
+	return ret;										//Button_DeBounce functions are copies of this function for every single button added to the keyboard bus
 }
 
 uint8_t Button1_DeBounce(uint16_t* ADC_Buffer)
@@ -672,6 +745,108 @@ FunctionalState soundLevelUpperBoundryCheck(uint16_t currentSoundLevel)
 		ret = DISABLE;
 	}
 	return ret;
+}
+void indicatorHandler(Pcf7584Control_t* hLedIndicator)
+{
+	uint8_t bit = 0;
+	uint8_t  IndicatorDisplay = hLedIndicator->indicatorBuffer;
+	if(hLedIndicator->indicatorEnable)
+	{
+		hLedIndicator->indicatorEnable = DISABLE;				//Disable the activation flag to prevent entering this function
+																//when no change is happening.
+//		indicatorBufferLoad(hLedIndicator);
+
+		if((hLedIndicator->indicatorLedSet == RESET) && (hLedIndicator->indicatorCounter - 1 < 0))
+		{
+			hLedIndicator->indicatorBuffer = RESET;
+
+		}
+		else
+		{
+			if(hLedIndicator->indicatorLedSet == SET)
+			{
+				bit |= 1 << (hLedIndicator->indicatorCounter - 1);
+				SET_BIT(hLedIndicator->indicatorBuffer, bit);
+			}
+			else if(hLedIndicator->indicatorLedSet == RESET)
+			{
+				bit |= 1 << (hLedIndicator->indicatorCounter);
+				CLEAR_BIT(hLedIndicator->indicatorBuffer, bit);
+			}
+//			bit |= 1 << (hLedIndicator->indicatorCounter - 1);
+		}
+
+
+
+
+//		for(uint8_t i = 0; i < hLedIndicator->indicatorCounter; ++i)
+//		{
+//			bit |= 1 << hLedIndicator->indicatorCounter;
+//		}
+
+//		if(hLedIndicator->indicatorLedSet == SET)					//set that bit in the indicator buffer
+//		{
+//			SET_BIT(hLedIndicator->indicatorBuffer, bit);
+////			++hLedIndicator->indicatorCounter;						//Increment number of LEDs to be turned on
+//		}
+//		if(hLedIndicator->indicatorLedSet == RESET)			//reset that bit in the indicator buffer
+//		{
+//			CLEAR_BIT(hLedIndicator->indicatorBuffer, bit);
+////			--hLedIndicator->indicatorCounter;						//Decrement number of LEDs to be turned on
+//		}
+
+		IndicatorDisplay = hLedIndicator->indicatorBuffer;
+
+		IndicatorDisplay ^= 0xFF;								//Invert bits before transmission
+
+		HAL_I2C_Master_Transmit(&hi2c1,							//Start transmission
+				hLedIndicator->indicatorAddress,
+				&IndicatorDisplay,
+				ENABLE,
+				100);
+
+
+//		if(hLedIndicator->indicatorLedSet == RESET)			//reset that bit in the indicator buffer
+//		{
+//			CLEAR_BIT(hLedIndicator->indicatorBuffer, bit);
+////			--hLedIndicator->indicatorCounter;						//Decrement number of LEDs to be turned on
+//		}
+	}
+}
+
+bool indicatorBufferUpperCheck(uint8_t indicatorCounter)
+{
+	bool ret 	= DISABLE;
+	ret 		= (indicatorCounter == 8) ? DISABLE : ENABLE;	//Check if the upper indicator boundary has been reached
+	return 	ret;
+}
+
+bool indicatorBufferLowerCheck(uint8_t indicatorCounter)
+{
+	bool ret 	= DISABLE;
+	ret 		= (indicatorCounter == 0) ? DISABLE : ENABLE;	//Check if the lower indicator boundary has been reached
+	return 	ret;
+}
+
+void indicatorBufferLoad(Pcf7584Control_t* hLedIndicator)
+{
+	uint8_t bit = 0;			//Shift one bit depending on the counter value. helps in selecting a specific bit
+	for(uint8_t i = 0; i < hLedIndicator->indicatorCounter; ++i)
+	{
+		bit |= 1 << hLedIndicator->indicatorCounter;
+	}
+
+	if(hLedIndicator->indicatorLedSet == SET)					//set that bit in the indicator buffer
+	{
+		SET_BIT(hLedIndicator->indicatorBuffer, bit);
+		++hLedIndicator->indicatorCounter;						//Increment number of LEDs to be turned on
+	}
+	else if(hLedIndicator->indicatorLedSet == RESET)			//reset that bit in the indicator buffer
+	{
+		CLEAR_BIT(hLedIndicator->indicatorBuffer, bit);
+		--hLedIndicator->indicatorCounter;						//Decrement number of LEDs to be turned on
+	}
+
 }
 /* USER CODE END 4 */
 

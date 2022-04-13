@@ -62,6 +62,13 @@ typedef enum
 }MenuButtonStatus_e;
 
 
+typedef enum
+{
+	IndicatorFlasher_normal = 0,
+	IndicatorFlasher_siren,
+
+}IndicatorFlasher_e;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -77,6 +84,8 @@ typedef enum
 
 
 #define AUDIO_LEVEL_STEP	10
+
+#define PCF8574_ADDRESS		0b01000000
 typedef struct
 {
 	uint32_t 			buttonTimer;
@@ -93,6 +102,18 @@ typedef struct
 	uint8_t				testCounter;
 	bool 				testDirection;
 }SoundTest_t;
+
+typedef struct
+{
+	uint32_t 			indicatorTimer;
+	bool 				indicatorEnable;
+	bool				indicatorLedSet;
+	uint8_t				indicatorBuffer;
+	IndicatorFlasher_e	indicatorMode;
+	uint16_t			indicatorAddress;
+	int16_t				indicatorCounter;
+	uint8_t 			indicatorFlasher;
+}Pcf7584Control_t;
 
 extern MenuButton_t hMenuButton;
 /* USER CODE END EM */
@@ -115,8 +136,13 @@ uint8_t MenuButton_Debounce	(void);
 uint8_t checkTimer			(uint32_t* timer, uint32_t msTime);
 void 	setTimer			(uint32_t* timer);
 
-FunctionalState soundLevelLowerBoundryCheck(uint16_t currentSoundLevel);
-FunctionalState soundLevelUpperBoundryCheck(uint16_t currentSoundLevel);
+FunctionalState soundLevelLowerBoundryCheck	(uint16_t currentSoundLevel);
+FunctionalState soundLevelUpperBoundryCheck	(uint16_t currentSoundLevel);
+
+void 			indicatorBufferLoad			(Pcf7584Control_t* hLedIndicator);
+bool 			indicatorBufferUpperCheck	(uint8_t indicatorCounter);
+bool 			indicatorBufferLowerCheck	(uint8_t indicatorCounter);
+void 			indicatorHandler			(Pcf7584Control_t* hLedIndicator);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -125,6 +151,9 @@ FunctionalState soundLevelUpperBoundryCheck(uint16_t currentSoundLevel);
 #define menu_button_Pin GPIO_PIN_4
 #define menu_button_GPIO_Port GPIOA
 #define menu_button_EXTI_IRQn EXTI4_IRQn
+
+
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
