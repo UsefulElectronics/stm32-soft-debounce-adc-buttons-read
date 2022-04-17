@@ -65,12 +65,17 @@ MenuButton_t hMenuButton;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	hMenuButton.buttonFlag.data = RESET;			//Flag reset
-	uint16_t 	soundLevel 		= 10;
-
 	SoundTest_t			hSoundLevelTest;
 
 	Pcf7584Control_t	hIndicator;
+
+	hMenuButton.buttonFlag.data 		= RESET;			//Flag reset
+
+	hSoundLevelTest.testSoundLevel 		= 10;
+
+
+
+
 
 
   /* USER CODE END 1 */
@@ -128,7 +133,7 @@ int main(void)
 			  if(Button_DeBounce(ADC_Buffer))
 			  {
 				  htim2.Instance->PSC 	= 125;
-				  htim2.Instance->CCR1  = soundLevel;
+				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 1250) && (ADC_Buffer[0] > 750)) //Second region
@@ -136,7 +141,7 @@ int main(void)
 			  if(Button1_DeBounce(ADC_Buffer))
 			  {
 				  htim2.Instance->PSC 	= 150;
-				  htim2.Instance->CCR1  = soundLevel;
+				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 1800) && (ADC_Buffer[0] > 1300)) //third region
@@ -144,7 +149,7 @@ int main(void)
 			  if(Button2_DeBounce(ADC_Buffer))
 			  {
 				  htim2.Instance->PSC 	= 175;
-				  htim2.Instance->CCR1  = soundLevel;
+				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 2300) && (ADC_Buffer[0] > 1800)) //Forth region
@@ -152,7 +157,7 @@ int main(void)
 			  if(Button3_DeBounce(ADC_Buffer))
 			  {
 				  htim2.Instance->PSC 	= 200;
-				  htim2.Instance->CCR1  = soundLevel;
+				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 2900) && (ADC_Buffer[0] > 2400)) //Fifth region
@@ -160,7 +165,7 @@ int main(void)
 			  if(Button4_DeBounce(ADC_Buffer))
 			  {
 				  htim2.Instance->PSC 	= 225;
-				  htim2.Instance->CCR1  = soundLevel;
+				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 3400) && (ADC_Buffer[0] > 3000)) //Sixth region
@@ -168,7 +173,7 @@ int main(void)
 			  if(Button5_DeBounce(ADC_Buffer))
 			  {
 				  htim2.Instance->PSC 	= 250;
-				  htim2.Instance->CCR1  = soundLevel;
+				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
 			  }
 		  }
 		  else if((ADC_Buffer[0] <= 3900) && (ADC_Buffer[0] > 3500)) //Seventh region
@@ -176,43 +181,14 @@ int main(void)
 			  if(Button6_DeBounce(ADC_Buffer))
 			  {
 				  htim2.Instance->PSC 	= 275;
-				  htim2.Instance->CCR1  = soundLevel;
+				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
 			  }
 		  }
 	  }
 	  else
 	  {
-		  if(!hSoundLevelTest.testTimerEnable)								//In case of sound test don't turn off the buzzer
-		  {
-			  htim2.Instance->CCR1  = RESET;								//Set duty cycle to be zero
-		  }
-		  else
-		  {
-			  htim2.Instance->PSC 	= 100 + hSoundLevelTest.testCounter;	//Sound test related part the pre-scaler is modified continuously
-			  htim2.Instance->CCR1  = soundLevel;							//to output different tones
-			  if(checkTimer(&hSoundLevelTest.testTimer, 200))
-			  {
-				  setTimer(&hSoundLevelTest.testTimer);
-				  if(hSoundLevelTest.testDirection)
-				  {
-					  hSoundLevelTest.testCounter += 25;					//Lower frequency of PWM signal used while the sound test mode is ON
-					  if(hSoundLevelTest.testCounter >= 200)
-					  {
-						  hSoundLevelTest.testDirection ^= 1;				//Used to toggle between increasing and decreasing frequency tone
-					  }
-				  }
-				  else
-				  {
-					  hSoundLevelTest.testCounter -= 25;					//Increase frequency signal used while the sound test mode is ON
-					  if(hSoundLevelTest.testCounter == 0)
-					  {
-						  hSoundLevelTest.testDirection ^= 1;
-					  }
-				  }
+		  sirenHandler(&hSoundLevelTest);
 
-			  }
-
-		  }
 
 		  Button_DeBounce(ADC_Buffer);										//Discharge software capacitors
 		  Button1_DeBounce(ADC_Buffer);
@@ -257,9 +233,9 @@ int main(void)
 		  switch(hMenuButton.buttonStatus)
 		  {
 		  	  case	MenuButtonStatus_oneClick:
-		  		  if(soundLevelUpperBoundryCheck(soundLevel))
+		  		  if(soundLevelUpperBoundryCheck(hSoundLevelTest.testSoundLevel))
 		  		  {
-		  			  soundLevel += AUDIO_LEVEL_STEP; 						//Increment sound level on step
+		  			hSoundLevelTest.testSoundLevel += AUDIO_LEVEL_STEP; 						//Increment sound level on step
 		  		  }
 		  		  if(indicatorBufferUpperCheck(hIndicator.indicatorCounter))
 		  		  {
@@ -269,9 +245,9 @@ int main(void)
 		  		  }
 		  		  break;
 		  	  case 	MenuButtonStatus_doubleClick:
-		  		  if(soundLevelLowerBoundryCheck(soundLevel))
+		  		  if(soundLevelLowerBoundryCheck(hSoundLevelTest.testSoundLevel))
 		  		  {
-		  			  soundLevel -= AUDIO_LEVEL_STEP;						//Detriment sound level
+		  			  hSoundLevelTest.testSoundLevel -= AUDIO_LEVEL_STEP;						//Detriment sound level
 		  		  }
 		  		  if(indicatorBufferLowerCheck(hIndicator.indicatorCounter))
 		  		  {
@@ -754,48 +730,9 @@ void indicatorHandler(Pcf7584Control_t* hLedIndicator)
 	{
 		hLedIndicator->indicatorEnable = DISABLE;				//Disable the activation flag to prevent entering this function
 																//when no change is happening.
-//		indicatorBufferLoad(hLedIndicator);
+		indicatorBufferLoad(hLedIndicator);
 
-		if((hLedIndicator->indicatorLedSet == RESET) && (hLedIndicator->indicatorCounter - 1 < 0))
-		{
-			hLedIndicator->indicatorBuffer = RESET;
-
-		}
-		else
-		{
-			if(hLedIndicator->indicatorLedSet == SET)
-			{
-				bit |= 1 << (hLedIndicator->indicatorCounter - 1);
-				SET_BIT(hLedIndicator->indicatorBuffer, bit);
-			}
-			else if(hLedIndicator->indicatorLedSet == RESET)
-			{
-				bit |= 1 << (hLedIndicator->indicatorCounter);
-				CLEAR_BIT(hLedIndicator->indicatorBuffer, bit);
-			}
-//			bit |= 1 << (hLedIndicator->indicatorCounter - 1);
-		}
-
-
-
-
-//		for(uint8_t i = 0; i < hLedIndicator->indicatorCounter; ++i)
-//		{
-//			bit |= 1 << hLedIndicator->indicatorCounter;
-//		}
-
-//		if(hLedIndicator->indicatorLedSet == SET)					//set that bit in the indicator buffer
-//		{
-//			SET_BIT(hLedIndicator->indicatorBuffer, bit);
-////			++hLedIndicator->indicatorCounter;						//Increment number of LEDs to be turned on
-//		}
-//		if(hLedIndicator->indicatorLedSet == RESET)			//reset that bit in the indicator buffer
-//		{
-//			CLEAR_BIT(hLedIndicator->indicatorBuffer, bit);
-////			--hLedIndicator->indicatorCounter;						//Decrement number of LEDs to be turned on
-//		}
-
-		IndicatorDisplay = hLedIndicator->indicatorBuffer;
+		IndicatorDisplay = hLedIndicator->indicatorBuffer;		//Copy to a temporary buffer
 
 		IndicatorDisplay ^= 0xFF;								//Invert bits before transmission
 
@@ -805,12 +742,6 @@ void indicatorHandler(Pcf7584Control_t* hLedIndicator)
 				ENABLE,
 				100);
 
-
-//		if(hLedIndicator->indicatorLedSet == RESET)			//reset that bit in the indicator buffer
-//		{
-//			CLEAR_BIT(hLedIndicator->indicatorBuffer, bit);
-////			--hLedIndicator->indicatorCounter;						//Decrement number of LEDs to be turned on
-//		}
 	}
 }
 
@@ -830,24 +761,62 @@ bool indicatorBufferLowerCheck(uint8_t indicatorCounter)
 
 void indicatorBufferLoad(Pcf7584Control_t* hLedIndicator)
 {
-	uint8_t bit = 0;			//Shift one bit depending on the counter value. helps in selecting a specific bit
-	for(uint8_t i = 0; i < hLedIndicator->indicatorCounter; ++i)
+	uint8_t bit = 0;
+	if((hLedIndicator->indicatorLedSet == RESET) && (hLedIndicator->indicatorCounter - 1 < 0))
 	{
-		bit |= 1 << hLedIndicator->indicatorCounter;
+		hLedIndicator->indicatorBuffer = RESET;				//Reset the indicator buffer if the buffer counter is 0 and the incoming command
+															//is to turn off one more LED
 	}
-
-	if(hLedIndicator->indicatorLedSet == SET)					//set that bit in the indicator buffer
+	else
 	{
-		SET_BIT(hLedIndicator->indicatorBuffer, bit);
-		++hLedIndicator->indicatorCounter;						//Increment number of LEDs to be turned on
-	}
-	else if(hLedIndicator->indicatorLedSet == RESET)			//reset that bit in the indicator buffer
-	{
-		CLEAR_BIT(hLedIndicator->indicatorBuffer, bit);
-		--hLedIndicator->indicatorCounter;						//Decrement number of LEDs to be turned on
+		if(hLedIndicator->indicatorLedSet == SET)			//One more LED will be turned on
+		{													//Select the bit to be set
+			bit |= 1 << (hLedIndicator->indicatorCounter - 1);
+			SET_BIT(hLedIndicator->indicatorBuffer, bit);	//Set one bit in the indicator buffer
+		}
+		else if(hLedIndicator->indicatorLedSet == RESET) 	//One more LED will be turned off
+		{
+			bit |= 1 << (hLedIndicator->indicatorCounter);	//Select the bit to be cleared
+			CLEAR_BIT(hLedIndicator->indicatorBuffer, bit); //clear one bit in the indicator buffer
+		}
 	}
 
 }
+void sirenHandler(SoundTest_t* hSiren)
+{
+	  if(!hSiren->testTimerEnable)							//In case of sound test don't turn off the buzzer
+	  {
+		  htim2.Instance->CCR1  = RESET;					//Set duty cycle to be zero
+	  }
+	  else
+	  {
+		  htim2.Instance->PSC 	= 100 + hSiren->testCounter;	//Sound test related part the pre-scaler is modified continuously
+		  htim2.Instance->CCR1  = hSiren->testSoundLevel;		//to output different tones
+		  if(checkTimer(&hSiren->testTimer, 15))
+		  {
+			  setTimer(&hSiren->testTimer);
+			  if(hSiren->testDirection)
+			  {
+				  hSiren->testCounter += 1;					//Lower frequency of PWM signal used while the sound test mode is ON
+				  if(hSiren->testCounter >= 250)
+				  {
+					  hSiren->testDirection ^= 1;			//Used to toggle between increasing and decreasing frequency tone
+				  }
+			  }
+			  else
+			  {
+				  hSiren->testCounter -= 1;					//Increase frequency signal used while the sound test mode is ON
+				  if(hSiren->testCounter <= 150)
+				  {
+					  hSiren->testDirection ^= 1;
+				  }
+			  }
+
+		  }
+
+	  }
+}
+
 /* USER CODE END 4 */
 
 /**

@@ -101,6 +101,7 @@ typedef struct
 	bool 				testTimerEnable;
 	uint8_t				testCounter;
 	bool 				testDirection;
+	uint16_t 				testSoundLevel;
 }SoundTest_t;
 
 typedef struct
@@ -138,6 +139,7 @@ void 	setTimer			(uint32_t* timer);
 
 FunctionalState soundLevelLowerBoundryCheck	(uint16_t currentSoundLevel);
 FunctionalState soundLevelUpperBoundryCheck	(uint16_t currentSoundLevel);
+void 			sirenHandler				(SoundTest_t* hSiren);
 
 void 			indicatorBufferLoad			(Pcf7584Control_t* hLedIndicator);
 bool 			indicatorBufferUpperCheck	(uint8_t indicatorCounter);
