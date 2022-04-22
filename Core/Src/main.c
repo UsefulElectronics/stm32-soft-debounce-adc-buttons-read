@@ -125,79 +125,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(ADC_Buffer[0] < 3900)										//it is possible that one of the buttons has been pressed
-	  {																//Every led will have a debounce function
 
-		  if((ADC_Buffer[0] <= 500) && (ADC_Buffer[0] > 1)) //First region
-		  {
-			  if(Button_DeBounce(ADC_Buffer))
-			  {
-				  htim2.Instance->PSC 	= 125;
-				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
-			  }
-		  }
-		  else if((ADC_Buffer[0] <= 1250) && (ADC_Buffer[0] > 750)) //Second region
-		  {
-			  if(Button1_DeBounce(ADC_Buffer))
-			  {
-				  htim2.Instance->PSC 	= 150;
-				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
-			  }
-		  }
-		  else if((ADC_Buffer[0] <= 1800) && (ADC_Buffer[0] > 1300)) //third region
-		  {
-			  if(Button2_DeBounce(ADC_Buffer))
-			  {
-				  htim2.Instance->PSC 	= 175;
-				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
-			  }
-		  }
-		  else if((ADC_Buffer[0] <= 2300) && (ADC_Buffer[0] > 1800)) //Forth region
-		  {
-			  if(Button3_DeBounce(ADC_Buffer))
-			  {
-				  htim2.Instance->PSC 	= 200;
-				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
-			  }
-		  }
-		  else if((ADC_Buffer[0] <= 2900) && (ADC_Buffer[0] > 2400)) //Fifth region
-		  {
-			  if(Button4_DeBounce(ADC_Buffer))
-			  {
-				  htim2.Instance->PSC 	= 225;
-				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
-			  }
-		  }
-		  else if((ADC_Buffer[0] <= 3400) && (ADC_Buffer[0] > 3000)) //Sixth region
-		  {
-			  if(Button5_DeBounce(ADC_Buffer))
-			  {
-				  htim2.Instance->PSC 	= 250;
-				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
-			  }
-		  }
-		  else if((ADC_Buffer[0] <= 3900) && (ADC_Buffer[0] > 3500)) //Seventh region
-		  {
-			  if(Button6_DeBounce(ADC_Buffer))
-			  {
-				  htim2.Instance->PSC 	= 275;
-				  htim2.Instance->CCR1  = hSoundLevelTest.testSoundLevel;
-			  }
-		  }
-	  }
-	  else
+	  if(adcKeyboardHandler	(ADC_Buffer, hSoundLevelTest.testSoundLevel) != ENABLE)
 	  {
-		  sirenHandler(&hSoundLevelTest);
-
-
-		  Button_DeBounce(ADC_Buffer);										//Discharge software capacitors
-		  Button1_DeBounce(ADC_Buffer);
-		  Button2_DeBounce(ADC_Buffer);
-		  Button3_DeBounce(ADC_Buffer);
-		  Button4_DeBounce(ADC_Buffer);
-		  Button5_DeBounce(ADC_Buffer);
-		  Button6_DeBounce(ADC_Buffer);
+		  sirenHandler			(&hSoundLevelTest);
 	  }
+
+	  indicatorHandler		(&hIndicator);
 
     /* USER CODE END WHILE */
 
@@ -271,7 +205,7 @@ int main(void)
 		  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	//button status is set to no press to avoid misbehavior of the button functionality
 
 	  }
-	  indicatorHandler(&hIndicator);
+//	  indicatorHandler(&hIndicator);
 //	  indicatorBuffer = 0x55;
 //
 //	  HAL_I2C_Master_Transmit(&hi2c1, indicatorAddress, &indicatorBuffer, 1, 100);
@@ -815,6 +749,82 @@ void sirenHandler(SoundTest_t* hSiren)
 		  }
 
 	  }
+}
+
+bool adcKeyboardHandler	(uint16_t* adcBuffer, uint16_t soundLevel)
+{
+	bool ret 	= DISABLE;
+	if(adcBuffer[0] < 3900)										//it is possible that one of the buttons has been pressed
+	{																//Every led will have a debounce function
+	  ret = ENABLE;
+	  if((adcBuffer[0] <= 500) && (adcBuffer[0] > 1)) //First region
+	  {
+		  if(Button_DeBounce(adcBuffer))
+		  {
+			  htim2.Instance->PSC 	= 125;
+			  htim2.Instance->CCR1  = soundLevel;
+		  }
+	  }
+	  else if((adcBuffer[0] <= 1250) && (adcBuffer[0] > 750)) //Second region
+	  {
+		  if(Button1_DeBounce(adcBuffer))
+		  {
+			  htim2.Instance->PSC 	= 150;
+			  htim2.Instance->CCR1  = soundLevel;
+		  }
+	  }
+	  else if((adcBuffer[0] <= 1800) && (adcBuffer[0] > 1300)) //third region
+	  {
+		  if(Button2_DeBounce(adcBuffer))
+		  {
+			  htim2.Instance->PSC 	= 175;
+			  htim2.Instance->CCR1  = soundLevel;
+		  }
+	  }
+	  else if((adcBuffer[0] <= 2300) && (adcBuffer[0] > 1800)) //Forth region
+	  {
+		  if(Button3_DeBounce(adcBuffer))
+		  {
+			  htim2.Instance->PSC 	= 200;
+			  htim2.Instance->CCR1  = soundLevel;
+		  }
+	  }
+	  else if((adcBuffer[0] <= 2900) && (adcBuffer[0] > 2400)) //Fifth region
+	  {
+		  if(Button4_DeBounce(adcBuffer))
+		  {
+			  htim2.Instance->PSC 	= 225;
+			  htim2.Instance->CCR1  = soundLevel;
+		  }
+	  }
+	  else if((adcBuffer[0] <= 3400) && (adcBuffer[0] > 3000)) //Sixth region
+	  {
+		  if(Button5_DeBounce(adcBuffer))
+		  {
+			  htim2.Instance->PSC 	= 250;
+			  htim2.Instance->CCR1  = soundLevel;
+		  }
+	  }
+	  else if((adcBuffer[0] <= 3900) && (adcBuffer[0] > 3500)) //Seventh region
+	  {
+		  if(Button6_DeBounce(adcBuffer))
+		  {
+			  htim2.Instance->PSC 	= 275;
+			  htim2.Instance->CCR1  = soundLevel;
+		  }
+	  }
+	}
+	  else
+	  {
+		  Button_DeBounce (adcBuffer);										//Discharge software capacitors
+		  Button1_DeBounce(adcBuffer);
+		  Button2_DeBounce(adcBuffer);
+		  Button3_DeBounce(adcBuffer);
+		  Button4_DeBounce(adcBuffer);
+		  Button5_DeBounce(adcBuffer);
+		  Button6_DeBounce(adcBuffer);
+	  }
+	return ret;
 }
 
 /* USER CODE END 4 */

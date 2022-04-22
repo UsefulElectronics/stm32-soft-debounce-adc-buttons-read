@@ -133,6 +133,7 @@ uint8_t	Button4_DeBounce	(uint16_t* ADC_Buffer);
 uint8_t	Button5_DeBounce	(uint16_t* ADC_Buffer);
 uint8_t Button6_DeBounce	(uint16_t* ADC_Buffer);
 uint8_t MenuButton_Debounce	(void);
+bool	adcKeyboardHandler	(uint16_t* adcBuffer, uint16_t soundLevel);
 
 uint8_t checkTimer			(uint32_t* timer, uint32_t msTime);
 void 	setTimer			(uint32_t* timer);
